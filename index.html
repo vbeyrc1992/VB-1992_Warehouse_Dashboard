@@ -96,6 +96,15 @@
 
     function refreshMap(){
         var container = L.DomUtil.get('map');
+        var LeafIcon = L.Icon.extend({
+              options: {
+                  iconSize:     [25, 40],
+                  iconAnchor:   [13, 39.5]
+              }
+          });
+        var greenIcon = new LeafIcon({iconUrl: 'icon-green_d.png'}),
+            redIcon = new LeafIcon({iconUrl: 'icon-red_d.png'}),
+            yellowIcon = new LeafIcon({iconUrl: 'icon-yellow_d.png'});
 
       	if(container != null){
         container._leaflet_id = null;
@@ -112,20 +121,33 @@
                 "OderID" : data.feed.entry[i].gsx$orderid.$t,
                 "Item" : data.feed.entry[i].gsx$item.$t,
                 "Latitude": parseFloat(data.feed.entry[i].gsx$latitude.$t),
-                "Longitude": parseFloat(data.feed.entry[i].gsx$longitude.$t)
+                "Longitude": parseFloat(data.feed.entry[i].gsx$longitude.$t),
+                "Dispatched" : data.feed.entry[i].gsx$orderdispatched.$t,
+                "Shipped" : data.feed.entry[i].gsx$ordershipped.$t
             };
             jsonDataObject.push(json_data);
                 
             for (var j = 0; j < jsonDataObject.length; j++) {
-                var marker = L.marker(L.latLng(parseFloat(jsonDataObject[j].Latitude), parseFloat(jsonDataObject[j].Longitude)));
-                marker.bindPopup(jsonDataObject[j].City, {
+                var colorIcon = oncolor(jsonDataObject[j].Dispatched,jsonDataObject[j].Shipped);
+                var marker = L.marker(L.latLng(parseFloat(jsonDataObject[j].Latitude), parseFloat(jsonDataObject[j].Longitude)),{icon: colorIcon});
+                      marker.bindPopup(jsonDataObject[j].City, {
                         autoClose: false
                 });
+                function oncolor(dispatch,ship){
+                  color=redIcon;
+                  if(dispatch == "Yes"){
+                    color=yellowIcon;
+                  }
+                  if(ship == "Yes"){
+                    color=greenIcon;
+                  }
+                  return color
+                }
                 map.addLayer(marker);
                 marker.on('click', onClick_Marker)
                 // Attach the corresponding JSON data to your marker:
                 marker.myJsonData =jsonDataObject[j];
-        
+
                 function onClick_Marker(e) {
                         var marker = e.target;
                         popup = L.popup()
@@ -227,7 +249,7 @@
                               '</td><td>' + data.feed.entry[i].gsx$city.$t + 
                               '</td><td>' + data.feed.entry[i].gsx$orderdispatched.$t +  
                               '</td><td>' + data.feed.entry[i].gsx$ordershipped.$t +  
-                              '</td><td>' + data.feed.entry[i].gsx$orderdateandtime.$t +  
+                              '</td><td>' + data.feed.entry[i].gsx$ordertime.$t +  
                               '</td><td>' + data.feed.entry[i].gsx$dispatchtime.$t +  
                               '</td><td>' + data.feed.entry[i].gsx$shippingtime.$t +  
                               '</td><td>' + data.feed.entry[i].gsx$timetaken.$t +  
